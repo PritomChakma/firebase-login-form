@@ -4,12 +4,14 @@ import { auth } from "./../firebase.init";
 const Signup = () => {
   const [errorMassage, setErrorMassage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignup = (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
-    console.log(email, password);
+    const terms = e.target.terms.checked;
+    console.log(email, password, terms);
 
     //  error and status
     setErrorMassage("");
@@ -18,7 +20,14 @@ const Signup = () => {
       setErrorMassage("password should be 6 chaerecter and longer");
       return;
     }
-
+    if (!terms) {
+      setErrorMassage("please accept our terms and conditon");
+      return;
+    }
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9!@#$%^&*])(?=.{6,})/;
+    // if(!passwordRegex.test(password)){
+    //   setErrorMassage("full fill the chearacterstic password")
+    // }
     // create user
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
@@ -69,15 +78,24 @@ const Signup = () => {
             />
           </svg>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             className="grow"
             placeholder="password"
           />
-          <button className="text-xs"></button>
+          <button
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-xs"
+          >
+            {showPassword ? (
+              <i class="fa-solid fa-eye-slash"></i>
+            ) : (
+              <i class="fa-solid fa-eye"></i>
+            )}
+          </button>
         </label>
-        {/* 
-        <div className="form-control">
+
+        <div className="form-control mt-3">
           <label className="label justify-start cursor-pointer">
             <input
               type="checkbox"
@@ -86,13 +104,15 @@ const Signup = () => {
             />
             <span className="label-text ml-2">Accept out terms and tools</span>
           </label>
-        </div> */}
+        </div>
 
         <button className="btn btn-accent btn-wide my-4">Register</button>
       </form>
 
       {errorMassage && <p className="text-red-600">{errorMassage}</p>}
-      {success && <p className="text-green-600 font-bold">SuccessFully Sign Up</p>}
+      {success && (
+        <p className="text-green-600 font-bold">SuccessFully Sign Up</p>
+      )}
     </div>
   );
 };
