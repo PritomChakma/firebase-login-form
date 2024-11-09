@@ -1,10 +1,15 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useState } from "react";
+import {
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { auth } from "./../firebase.init";
-import { Link } from 'react-router-dom';
 const Login = () => {
   const [errorMassage, setErrorMassage] = useState();
   const [success, setSuccess] = useState(false);
+  const emailRef = useRef();
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -20,13 +25,36 @@ const Login = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((result) => {
         console.log(result.user);
-        setSuccess(true);
+        if (!result.user.emailVerified) {
+          setErrorMassage("please enter verified Email");
+        } else {
+          setSuccess(true);
+        }
+
+        // Email verification
+        sendEmailVerification(auth.currentUser).then(() => {
+          console.log("verfied email sent");
+        });
       })
       .catch((error) => {
         console.log("ERROR", error.message);
         setErrorMassage(error.message);
         setSuccess(false);
       });
+  };
+
+  const handleForgetPassword = () => {
+    console.log("give me email address", emailRef.current.value);
+    const email = emailRef.current.value;
+
+    if (!email) {
+      console.log("please enter the valid email");
+    } else {
+      sendPasswordResetEmail(auth, email)
+      .then(()=>{
+        alert("password email send please check your email")
+      })
+    }
   };
 
   return (
@@ -49,6 +77,7 @@ const Login = () => {
                 </label>
                 <input
                   type="email"
+                  ref={emailRef}
                   name="email"
                   placeholder="email"
                   className="input input-bordered"
@@ -66,7 +95,7 @@ const Login = () => {
                   className="input input-bordered"
                   required
                 />
-                <label className="label">
+                <label onClick={handleForgetPassword} className="label">
                   <a href="#" className="label-text-alt link link-hover">
                     Forgot password?
                   </a>
@@ -77,10 +106,19 @@ const Login = () => {
               </div>
             </form>
 
-            {errorMassage && <p className="text-red-600 px-10">Please Try again</p>}
-            {success && <p className="text-green-600 px-10">Login SuccssFully</p>}
+            {errorMassage && (
+              <p className="text-red-600 px-10">{errorMassage}</p>
+            )}
+            {success && (
+              <p className="text-green-600 px-10">Login SuccssFully</p>
+            )}
 
-            <p className="px-10 py-3">New to This website? Please <Link className="text-blue-700"  to="/Signup">SignUp</Link></p>
+            <p className="px-10 py-3">
+              New to This website? Please{" "}
+              <Link className="text-blue-700" to="/Signup">
+                SignUp
+              </Link>
+            </p>
           </div>
         </div>
       </div>
